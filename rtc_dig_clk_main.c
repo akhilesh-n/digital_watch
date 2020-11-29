@@ -1,0 +1,29 @@
+#include"header.h"
+main()
+{
+u8 hr,min,sec;
+	lcd_init();
+	i2c_byte_write_frame(0xd0,0x2,0x23);
+	delay_ms(10);
+	i2c_byte_write_frame(0xd0,0x1,0x59);
+	delay_ms(10);
+	i2c_byte_write_frame(0xd0,0x0,0x59);
+	delay_ms(10);
+	while(1)
+	{
+	hr=i2c_byte_read_frame(0xd0,0x2);
+	min=i2c_byte_read_frame(0xd0,0x1);
+	sec=i2c_byte_read_frame(0xd0,0x0);
+	lcd_cmd(0x80);
+	lcd_cmd(0xc);
+	lcd_data((hr/16)+48);
+	lcd_data((hr%16)+48);
+		lcd_data(':');
+		lcd_data((min/16)+48);
+		lcd_data((min%16)+48);
+		lcd_data(':');
+		lcd_data((sec/16)+48);
+		lcd_data((sec%16)+48);
+	
+}
+}
