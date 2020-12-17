@@ -1,10 +1,9 @@
 #include "header.h"
 #include <reg51.h>
-sbit SW1=P1^0;//increment
-sbit SW2=P1^1;//next
-sbit SW3=P3^3;//save n exit
-sbit SW4=P3^2;//menu
-u8 SNE=0;
+sbit NXT=P1^1;//next 
+sbit INC=P3^3;//increment intrr
+sbit MENU=P3^2;//menu intrrr
+u8 INCR=0;
 void delay_ms(unsigned int ms)
 {
 unsigned char ch;
@@ -24,9 +23,9 @@ void enable_ext_int0(void)
 	IT0=1;//edge triggered
 }
 
-//ext int0 isr
 
-void interrupt_handler_0(void) interrupt 0 
+
+void interrupt_handler_0(void) interrupt 0 //ext int0 isr
 {
 RTC_SET=1;	
 }
@@ -37,87 +36,208 @@ void enable_ext_int1(void)
 	IT1=1;//edge triggered
 }
 
-//ext int1 isr
 
-void interrupt_handler_1(void) interrupt 2 
-{
-SNE=1;	
-}
-u8 hex_to_int(u8 num)// 0x24--->24 ; not equqlent of 0x24
-{
-	u8 n;
-	n=(num/16)*10 +(num%16);
-	return n;
-}
 
-u8 int_to_hex(u8 num)
+void interrupt_handler_1(void) interrupt 2 //ext int1 isr
 {
-	return num;
+	INCR=1;
 }
 void time_setting()
 {
-	u8 i_hr,i_min,i_sec;
-	i_hr=hex_to_int(hr);
-	i_min=hex_to_int(min);
-	i_sec=hex_to_int(sec);
 	
-	while((SW2==1) && (SNE==0))//SNE save and exit flag will set by ext intr 1
-	{
 		lcd_cmd(0x1);
 	lcd_string("set hour");
-	lcd_cmd(0xc0);
-		lcd_data((hr/16)+48);
-	lcd_data((hr%16)+48);
-		if(SW1==0)
-		{
-			i_hr++;
-		hr=int_to_hex(i_hr);
-		}
-	}
-	if(SNE==1)
+
+	while(NXT==1)//SNE save and exit flag will set by ext intr 1
 	{
-		SNE=0;
+		
+	lcd_cmd(0xc0);
+	lcd_data((hr/16)+48);
+	lcd_data((hr%16)+48);
+		
+		if(INCR==1)
+		{
+			INCR=0;
+			hr++;
+			if(hr>0x23)
+				hr=0;
+			
+			if((hr%16)>9)
+				hr+=6;
+		}
+		if(RTC_SET==1)
+	{
+		RTC_SET=0;
 		goto set;
 	}
+	}
 	
-	while((SW2==1) && (SNE==0))//SNE save and exit flag will set by ext intr 1
+	while(NXT==0);
+
+	lcd_cmd(0x1);
+	lcd_string("set min");	
+	while(NXT==1)//SNE save and exit flag will set by ext intr 1
 	{
-		lcd_cmd(0x1);
-	lcd_string("set min");
 	lcd_cmd(0xc0);
 		lcd_data((min/16)+48);
 		lcd_data((min%16)+48);
-		if(SW1==0)
+		
+		if(INCR==1)
 		{
-			i_min++;
-		min=int_to_hex(i_min);
+			INCR=0;
+			min++;
+			if(min>0x59)
+				min=0;
+			if((min%16)>9)
+			min+=6;
 		}
-	}
-	if(SNE==1)
+			if(RTC_SET==1)
 	{
-		SNE=0;
+		RTC_SET=0;
 		goto set;
 	}
-	
-	while((SW2==1) && (SNE==0))//SNE save and exit flag will set by ext intr 1
-	{
-		lcd_cmd(0x1);
+	}
+
+	while(NXT==0);
+
+	lcd_cmd(0x1);
 	lcd_string("set sec");
-	lcd_cmd(0xc0);
+	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	{
+		lcd_cmd(0xc0);
 		lcd_data((sec/16)+48);
 		lcd_data((sec%16)+48);
-		if(SW1==0)
+		if(INCR==1)
 		{
-			i_sec++;
-		sec=int_to_hex(i_sec);
+			INCR=0;
+			sec++;
+			if(sec>0x59)
+				sec=0;
+			if((sec%16)>9)
+			sec+=6;
+		}
+		if(RTC_SET==1)
+		{
+			RTC_SET=0;
+			goto set;
 		}
 	}
+
+	while(NXT==0);
+
+	lcd_cmd(0x1);
+	lcd_string("set date");
+	while(NXT==1)//
+	{
+		lcd_cmd(0xc0);
+		lcd_data((dd/16)+48);
+		lcd_data((dd%16)+48);
+		if(INCR==1)
+		{
+			INCR=0;
+			dd++;
+			if(dd>0x31)
+				dd=1;
+			if((dd%16)>9)
+			dd+=6;
+		}
+		if(RTC_SET==1)
+		{
+			RTC_SET=0;
+			goto set;
+		}
+	}
+
+	while(NXT==0);
+
+	lcd_cmd(0x1);
+	lcd_string("set month");
+	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	{
+		lcd_cmd(0xc0);
+		lcd_data((mm/16)+48);
+		lcd_data((mm%16)+48);
+		if(INCR==1)
+		{
+			INCR=0;
+			mm++;
+			if(mm>0x12)
+				mm=1;
+			if((mm%16)>9)
+			mm+=6;
+		}
+		if(RTC_SET==1)
+		{
+			RTC_SET=0;
+			goto set;
+		}
+	}
+
+	while(NXT==0);
+
+	lcd_cmd(0x1);
+	lcd_string("set year");
+	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	{
+		lcd_cmd(0xc0);
+		lcd_data(2+48);
+		lcd_data(0+48);
+		lcd_data((yy/16)+48);
+		lcd_data((yy%16)+48);
+		if(INCR==1)
+		{
+			INCR=0;
+			yy++;
+			if(yy>0x99)
+				yy=1;
+			if((yy%16)>9)
+			yy+=6;
+		}
+		if(RTC_SET==1)
+		{
+			RTC_SET=0;
+			goto set;
+		}
+	}
+	
+	while(NXT==0);
+
+	lcd_cmd(0x1);
+	lcd_string("set week");
+	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	{
+		lcd_cmd(0xc0);
+		lcd_week(day);
+		if(INCR==1)
+		{
+			INCR=0;
+			day++;
+			if(day>7)
+				day=1;
+		}
+		if(RTC_SET==1)
+		{
+			RTC_SET=0;
+			goto set;
+		}
+	}
+
+
+	
 	set:
-	i2c_byte_write_frame(0xd0,0x2,i_hr);
+	i2c_byte_write_frame(0xd0,0x2,hr);
 	delay_ms(10);
-	i2c_byte_write_frame(0xd0,0x1,i_min);
+	i2c_byte_write_frame(0xd0,0x1,min);
 	delay_ms(10);
-	i2c_byte_write_frame(0xd0,0x0,i_sec);
+	i2c_byte_write_frame(0xd0,0x0,sec);
 	delay_ms(10);
-SNE=0;
+	i2c_byte_write_frame(0xd0,0x3,day);
+	delay_ms(10);
+	i2c_byte_write_frame(0xd0,0x4,dd);
+	delay_ms(10);
+	i2c_byte_write_frame(0xd0,0x5,mm);
+	delay_ms(10);
+	i2c_byte_write_frame(0xd0,0x6,yy);
+	delay_ms(10);
+lcd_cmd(0x01);
 }

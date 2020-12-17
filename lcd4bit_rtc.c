@@ -1,6 +1,6 @@
 #include<reg51.h>
 #include"header.h"
-#include <string.h>
+//#include <string.h>
 
 sbit RS=P3^4;
 sbit RW=P3^5;
@@ -53,33 +53,26 @@ void lcd_string(u8 *str)
 	{
 		lcd_data(*str);
 		str++;	
-		delay_ms(50);		
 	}
 }
-/*
-void lcd_int(s16 num)
+void lcd_week(u8 day)
 {
-	u8 buff[6];
-	s8 i=0;
-	if(num==0)
-		{
-			lcd_data('0');
-			return;
-		}
-			if(num<0)
-		{
-			lcd_data('-');
-			num=-num;
-		}
-	while(num)
+	switch(day)
 	{
-		buff[i]=(num%10)+48;
-		num=num/10;
-		i++;
+		case 1: lcd_string("SUN");
+						break;
+		case 2: lcd_string("MON");
+						break;
+		case 3: lcd_string("TUE");
+						break;
+		case 4: lcd_string("WED");
+						break;
+		case 5: lcd_string("THU");
+						break;
+		case 6: lcd_string("FRI");
+						break;
+		case 7: lcd_string("SAT");
+						break;
 	}
-	for(--i;i>=0;i--)
-	{
-		lcd_data(buff[i]);
-	}
-	
-}*/
+}
+
