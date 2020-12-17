@@ -1,4 +1,4 @@
-# rtc_dig_clock(24 hour format 17/12/2020)
+# rtc_dig_clock(3 switch 24 hour format 17/12/2020)
 
 -----------------
 hr:min:sec
