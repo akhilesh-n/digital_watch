@@ -4,6 +4,7 @@ sbit NXT=P1^1;//next
 sbit INC=P3^3;//increment intrr
 sbit MENU=P3^2;//menu intrrr
 u8 INCR=0;
+
 void delay_ms(unsigned int ms)
 {
 unsigned char ch;
@@ -44,6 +45,62 @@ void interrupt_handler_1(void) interrupt 2 //ext int1 isr
 }
 void time_setting()
 {
+	u8 temp=0;
+	temp=hr&0x3f;
+	/*if(temp>0x12)
+	{
+		switch(temp)
+		{
+			case 0x13: temp=0x1; break;
+			case 0x14: temp=0x2; break;
+			case 0x15: temp=0x3; break;
+			case 0x16: temp=0x4; break;
+			case 0x17: temp=0x5; break;
+			case 0x18: temp=0x6; break;
+			case 0x19: temp=0x7; break;
+			case 0x20: temp=0x8; break;
+			case 0x21: temp=0x9; break;
+			case 0x22: temp=0x10; break;
+			case 0x23: temp=0x11; break;
+			case 0x24: temp=0x12; break;
+		}
+			
+	}*/
+		lcd_cmd(0x1);
+	lcd_string("set hour format");
+
+	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	{
+		if(IS_24==1)
+		{
+	lcd_cmd(0xc0);
+	lcd_string("24 HR");
+		}
+		else
+		{
+			lcd_cmd(0xc0);
+	lcd_string("12 HR");
+		}
+		if(INCR==1)
+		{
+			INCR=0;
+			if(IS_24==1)
+			{
+			IS_24=0;
+			}
+			else
+			{
+				IS_24=1;
+			}
+		}
+	/*	if(RTC_SET==1)
+	{
+		RTC_SET=0;
+		goto set;
+	}*/
+	}
+	
+	while(NXT==0);
 	
 		lcd_cmd(0x1);
 	lcd_string("set hour");
@@ -52,12 +109,21 @@ void time_setting()
 	{
 		
 	lcd_cmd(0xc0);
+		if(IS_24==1)
+		{
 	lcd_data((hr/16)+48);
 	lcd_data((hr%16)+48);
-		
+		}
+		else
+		{
+			lcd_data((temp/16)+48);
+			lcd_data((temp%16)+48);
+		}
 		if(INCR==1)
 		{
 			INCR=0;
+			if(IS_24==1)
+			{
 			hr++;
 			if(hr>0x23)
 				hr=0;
@@ -65,11 +131,56 @@ void time_setting()
 			if((hr%16)>9)
 				hr+=6;
 		}
+			else
+			{
+				temp++;
+				if(temp>0x12)
+					temp=1;
+				if((temp%16)>9)
+					temp+=6;
+			}
+		}
 		if(RTC_SET==1)
 	{
 		RTC_SET=0;
 		goto set;
 	}
+	}
+	
+	while(NXT==0);
+	
+			lcd_cmd(0x1);
+	lcd_string("set AM/PM");
+
+	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	{
+		
+	lcd_cmd(0xc0);
+	//lcd_data((hr/16)+48);
+	//lcd_data((hr%16)+48);
+		if(IS_AM==1)
+		{
+			lcd_string("AM");
+		}
+		else
+		{
+			lcd_string("PM");
+		}
+		if(INCR==1)
+		{
+			INCR=0;
+			if(IS_AM==1)
+				IS_AM=0;
+			else
+			{
+				IS_AM=1;
+			}
+	  }
+		if(RTC_SET==1)
+		{
+		RTC_SET=0;
+		goto set;
+		}
 	}
 	
 	while(NXT==0);
@@ -225,8 +336,23 @@ void time_setting()
 
 	
 	set:
+	if(IS_24==1)
+	{
 	i2c_byte_write_frame(0xd0,0x2,hr);
 	delay_ms(10);
+	}
+	else
+	{
+		hr=temp|0x40;
+		i2c_byte_write_frame(0xd0,0x2,hr);
+		delay_ms(10);
+		if(IS_AM==0)
+		{
+				hr=hr|(1<<5);
+				i2c_byte_write_frame(0xd0,0x2,hr);
+				delay_ms(10);
+		}
+	}
 	i2c_byte_write_frame(0xd0,0x1,min);
 	delay_ms(10);
 	i2c_byte_write_frame(0xd0,0x0,sec);

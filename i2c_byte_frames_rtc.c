@@ -9,11 +9,11 @@ void i2c_byte_write_frame(u8 sa,u8 ma,u8 d)
 	
 	i2c_write(sa);//sa(7bit) with write(1bit) option
 	res=i2c_ack();
-	if(res==1)
+/*	if(res==1)
 	{
 		//uart_string("sa+w error in write\n");
 		goto out;
-	}
+	}*/
 	
 	i2c_write(ma);//write 8 bit ma
 	res=i2c_ack();
