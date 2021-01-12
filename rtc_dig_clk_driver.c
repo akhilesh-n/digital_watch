@@ -46,11 +46,11 @@ void interrupt_handler_1(void) interrupt 2 //ext int1 isr
 void time_setting()
 {
 	u8 temp=hr;
-	if((hr&0x40)==0)
+	if((hr&0x40)==0)// to check 24/12 hr format
 	{
-	temp=hr&0x3f;
-	if(temp>0x12)
-	{
+	temp=hr&0x3f;//if 24 hr then take first 6 bits and then process it to corresponding 12 hour format
+	if(temp>0x12)//5th bit oh hr is am/pm
+	{//6th bit on hr is set if 12 hr format
 		IS_AM=0;
 	//u8 temp1;
 		if(temp<0x20)
@@ -67,9 +67,9 @@ void time_setting()
 		lcd_cmd(0x1);
 	lcd_string("set hour format");
 
-	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	while(NXT==1)//if NXT is zero go to next option
 	{
-		if(IS_24==1)
+		if(IS_24==1)//to check 24 hr format or not
 		{
 	lcd_cmd(0xc0);
 	lcd_string("24 HR");
@@ -103,7 +103,7 @@ void time_setting()
 		lcd_cmd(0x1);
 	lcd_string("set hour");
 
-	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	while(NXT==1)//NXT tab
 	{
 		
 	lcd_cmd(0xc0);
@@ -150,7 +150,7 @@ void time_setting()
 			lcd_cmd(0x1);
 	lcd_string("set AM/PM");
 
-	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	while(NXT==1)//
 	{
 		
 	lcd_cmd(0xc0);
@@ -185,7 +185,7 @@ void time_setting()
 
 	lcd_cmd(0x1);
 	lcd_string("set min");	
-	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	while(NXT==1)//
 	{
 	lcd_cmd(0xc0);
 		lcd_data((min/16)+48);
@@ -211,7 +211,7 @@ void time_setting()
 
 	lcd_cmd(0x1);
 	lcd_string("set sec");
-	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	while(NXT==1)//
 	{
 		lcd_cmd(0xc0);
 		lcd_data((sec/16)+48);
@@ -261,7 +261,7 @@ void time_setting()
 
 	lcd_cmd(0x1);
 	lcd_string("set month");
-	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	while(NXT==1)//
 	{
 		lcd_cmd(0xc0);
 		lcd_data((mm/16)+48);
@@ -286,7 +286,7 @@ void time_setting()
 
 	lcd_cmd(0x1);
 	lcd_string("set year");
-	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	while(NXT==1)//
 	{
 		lcd_cmd(0xc0);
 		lcd_data(2+48);
@@ -313,7 +313,7 @@ void time_setting()
 
 	lcd_cmd(0x1);
 	lcd_string("set week");
-	while(NXT==1)//SNE save and exit flag will set by ext intr 1
+	while(NXT==1)//
 	{
 		lcd_cmd(0xc0);
 		lcd_week(day);
