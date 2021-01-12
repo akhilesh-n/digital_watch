@@ -45,27 +45,25 @@ void interrupt_handler_1(void) interrupt 2 //ext int1 isr
 }
 void time_setting()
 {
-	u8 temp=0;
-	temp=hr&0x3f;
-	/*if(temp>0x12)
+	u8 temp=hr;
+	if((hr&0x40)==0)
 	{
-		switch(temp)
+	temp=hr&0x3f;
+	if(temp>0x12)
+	{
+		IS_AM=0;
+	//u8 temp1;
+		if(temp<0x20)
 		{
-			case 0x13: temp=0x1; break;
-			case 0x14: temp=0x2; break;
-			case 0x15: temp=0x3; break;
-			case 0x16: temp=0x4; break;
-			case 0x17: temp=0x5; break;
-			case 0x18: temp=0x6; break;
-			case 0x19: temp=0x7; break;
-			case 0x20: temp=0x8; break;
-			case 0x21: temp=0x9; break;
-			case 0x22: temp=0x10; break;
-			case 0x23: temp=0x11; break;
-			case 0x24: temp=0x12; break;
+			temp=(hr&0xf)-2;
 		}
-			
-	}*/
+		else
+		{
+			temp=(hr&0xf)+8;
+		}
+	}
+}
+	
 		lcd_cmd(0x1);
 	lcd_string("set hour format");
 
@@ -93,11 +91,11 @@ void time_setting()
 				IS_24=1;
 			}
 		}
-	/*	if(RTC_SET==1)
+		if(RTC_SET==1)
 	{
 		RTC_SET=0;
 		goto set;
-	}*/
+	}
 	}
 	
 	while(NXT==0);

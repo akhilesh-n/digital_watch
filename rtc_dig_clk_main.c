@@ -9,7 +9,7 @@ void main()
 	lcd_init();
 	enable_ext_int0();
 	enable_ext_int1();
-	i2c_byte_write_frame(0xd0,0x2,0x20);
+	i2c_byte_write_frame(0xd0,0x2,0x13);
 	delay_ms(10);
 	i2c_byte_write_frame(0xd0,0x1,0x10);
 	delay_ms(10);
